@@ -9,6 +9,6 @@ import com.jobs.jobportal.model.Job;
 public interface JobRepository extends JpaRepository<Job, Long> {
     List<Job> findByExpiredAtAfter(LocalDateTime now);
     void deleteByExpiredAtBefore(LocalDateTime now);
-
+     List<Job> findByUserName(String userName);
 
 }

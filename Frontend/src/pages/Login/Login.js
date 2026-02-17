@@ -27,6 +27,7 @@ function Login() {
                 localStorage.setItem("token", token);
                 localStorage.setItem("userId", userId);
                 localStorage.setItem("username", userName);
+                console.log(userName);
                 alert("Login successful!");
                 navigate("/dashboard");
             } else alert("User not found.");

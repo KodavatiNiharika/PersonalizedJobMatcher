@@ -1,17 +1,15 @@
 package com.jobs.jobportal.Security;
+import java.io.IOException;
+
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Component;
+import org.springframework.web.filter.OncePerRequestFilter;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.stereotype.Component;
-import org.springframework.web.filter.OncePerRequestFilter;
-
-import java.io.IOException;
 
 @Component
 public class JwtRequestFilter extends OncePerRequestFilter {
@@ -25,30 +23,33 @@ public class JwtRequestFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
-                                    FilterChain filterChain) throws ServletException, IOException {
+                                    FilterChain filterChain)
+            throws ServletException, IOException {
 
         final String authHeader = request.getHeader("Authorization");
 
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
+
             String token = authHeader.substring(7);
+
             try {
                 String email = jwtUtil.extractEmail(token);
-                if (!jwtUtil.validateToken(token, email)) {
-                    response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Invalid JWT token");
-                    return;
+
+                if (email != null && jwtUtil.validateToken(token, email)) {
+
+                    UsernamePasswordAuthenticationToken auth =
+                            new UsernamePasswordAuthenticationToken(
+                                    email,
+                                    null,
+                                    java.util.Collections.emptyList()
+                            );
+
+                    SecurityContextHolder.getContext().setAuthentication(auth);
                 }
-                Authentication auth = new UsernamePasswordAuthenticationToken(email, null, null);
-                SecurityContextHolder.getContext().setAuthentication(auth);
-            } catch (Exception e) {
-                response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Invalid JWT token");
-                return;
-            }
-        } else {
-            // no token provided for protected endpoints
-            if (!request.getRequestURI().contains("/signup") &&
-                !request.getRequestURI().contains("/login")) {
-                response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Missing JWT token");
-                return;
+
+            } catch (Exception ignored) {
+                // Do NOT manually send error
+                // Just let Spring Security handle it
             }
         }
 

@@ -1,293 +1,288 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import "./Profile.css";
 import { createPortal } from "react-dom";
+import { useNavigate } from "react-router-dom";
 import Navbar from "../../components/Navbar/Navbar";
 import axios from "axios";
-import { useEffect } from "react";
-import { useRef } from "react";
 
 const Profile = () => {
-  const [resumeUrl, setResumeUrl] = useState("");
-  const [resumeId, setResumeId] = useState(null);
-  const [isResumeOpen, setIsResumeOpen] = useState(false);
-  const [resumeName, setResumeName] = useState("");
-  const [userJobs, setUserJobs] = useState([]);
-
+  const navigate = useNavigate();
   const fileInputRef = useRef(null);
 
+  const [resume, setResume] = useState(null); // { id, fileName }
+  const [resumeUrl, setResumeUrl] = useState("");
+  const [isResumeOpen, setIsResumeOpen] = useState(false);
+  const [userJobs, setUserJobs] = useState([]);
+
+  const userId = localStorage.getItem("userId");
+  const token = localStorage.getItem("token");
+  const userName = localStorage.getItem("username");
+
+  /* ================= FETCH DATA ================= */
+
+  useEffect(() => {
+    fetchResume();
+    fetchUserJobs();
+  }, []);
+
+  const handleDeleteJob = async (jobId) => {
+  const confirmDelete = window.confirm(
+    "Are you sure you want to delete this job?"
+  );
+
+  if (!confirmDelete) return;
+
+  try {
+    await axios.delete(
+      `http://localhost:8080/api/jobs/${jobId}`,
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+
+    // remove deleted job from UI instantly
+    setUserJobs((prevJobs) =>
+      prevJobs.filter((job) => job.id !== jobId)
+    );
+
+    alert("Job deleted successfully!");
+  } catch (error) {
+    console.error("Delete failed", error);
+    alert("Failed to delete job!");
+  }
+};
 
 
-  const user = {
-    userName: "Niharika",
-    email: "niharika@gmail.com",
-  };
-    
-   useEffect(() => {
   const fetchResume = async () => {
     try {
-      const userId = localStorage.getItem("userId");
-      const token = localStorage.getItem("token");
-      console.log(userId);
-      console.log(token);
       const response = await axios.get(
         `http://localhost:8080/api/resume/user/${userId}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
+        { headers: { Authorization: `Bearer ${token}` } }
       );
 
-      setResumeId(response.data.id);
-      setResumeName(response.data.fileName);
-
-    } catch (error) {
-      console.log("No resume found or unauthorized");
+      setResume(response.data);
+    } catch {
+      setResume(null);
     }
   };
 
-  fetchResume();
-}, []);
+  const fetchUserJobs = async () => {
+    try {
+      const response = await axios.get(
+        `http://localhost:8080/api/jobs/my-jobs`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      console.log(response);
 
+      setUserJobs(response.data);
+    } catch (error) {
+      console.error("Failed to fetch jobs", error);
+    }
+  };
 
+  /* ================= RESUME ACTIONS ================= */
 
-    const handleResumeUpload = () => {
-        fileInputRef.current.click();
-      };
-      
-      const handleFileChange = async (e) => {
-    const selectedFile = e.target.files[0];
-    if (!selectedFile) return;
+  const handleUploadClick = () => {
+    fileInputRef.current.click();
+  };
+
+  const handleFileChange = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
 
     const formData = new FormData();
-    formData.append("file", selectedFile);
-    formData.append("userId", localStorage.getItem("userId"));
+    formData.append("file", file);
+    formData.append("userId", userId);
 
     try {
-      const token = localStorage.getItem("token");
-
       const response = await axios.post(
         "http://localhost:8080/api/resume/upload",
         formData,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
+        { headers: { Authorization: `Bearer ${token}` } }
       );
 
-      const savedResume = response.data;
-
-      setResumeId(savedResume.id);
-      setResumeName(savedResume.fileName);
-
+      setResume(response.data);
       alert("Resume uploaded successfully!");
-
     } catch (error) {
-      console.error(error);
       alert("Upload failed!");
     }
   };
 
+  const handleViewResume = async () => {
+    if (!resume) return;
 
+    try {
+      const response = await axios.get(
+        `http://localhost:8080/api/resume/view/${resume.id}`,
+        {
+          responseType: "blob",
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
 
-const handleViewResume = async (resumeId) => {
-  if (!resumeId) {
-    alert("No resume uploaded yet!");
-    return;
-  }
-
-  try {
-    const token = localStorage.getItem("token");
-
-    const response = await axios.get(
-      `http://localhost:8080/api/resume/view/${resumeId}`,
-      {
-        responseType: "blob",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      }
-    );
-
-    const file = new Blob([response.data], { type: "application/pdf" });
-    const fileURL = URL.createObjectURL(file);
-
-    setResumeUrl(fileURL);
-    setIsResumeOpen(true);
-  } catch (error) {
-    console.error(error);
-    alert("Failed to load resume");
-  }
-};
- 
-  const handleDelete = async () => {
-  if (!resumeId) {
-    alert("No resume to delete!");
-    return;
-  }
-
-  const confirmDelete = window.confirm(
-    "Are you sure you want to delete your resume?"
-  );
-  if (!confirmDelete) return;
-
-  try {
-    const token = localStorage.getItem("token");
-
-    await axios.delete(
-      `http://localhost:8080/api/resume/${resumeId}`,
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      }
-    );
-
-    // Clear frontend state
-    setResumeId(null);
-    setResumeName("");
-    setResumeUrl("");
-    setIsResumeOpen(false);
-
-    alert("Resume deleted successfully!");
-
-  } catch (error) {
-    console.error(error);
-    alert("Failed to delete resume!");
-  }
-};
-
-
-  const handleCloseResume = () => {
-    setIsResumeOpen(false);
+      const file = new Blob([response.data], { type: "application/pdf" });
+      setResumeUrl(URL.createObjectURL(file));
+      setIsResumeOpen(true);
+    } catch {
+      alert("Failed to load resume");
+    }
   };
 
+  const handleDeleteResume = async () => {
+    if (!resume) return;
+
+    const confirmDelete = window.confirm(
+      "Are you sure you want to delete your resume?"
+    );
+    if (!confirmDelete) return;
+
+    try {
+      await axios.delete(
+        `http://localhost:8080/api/resume/${resume.id}`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      setResume(null);
+      setIsResumeOpen(false);
+      alert("Resume deleted successfully!");
+    } catch {
+      alert("Failed to delete resume!");
+    }
+  };
+
+  /* ================= JOB ACTIONS ================= */
+
+  const handleEditJob = (jobId) => {
+  navigate("/jobupload", { state: { jobId } });
+};
+
+
+  /* ================= UI ================= */
 
   return (
     <>
-      <Navbar />
+    {!isResumeOpen && <Navbar />}
+
 
       <div className="profile-page">
 
-        {/* ===== TOP HEADER ===== */}
+        {/* ===== HEADER ===== */}
         <div className="profile-top">
           <div className="profile-identity">
-            <div className="avatar-lg">N</div>
+            <div className="avatar-lg">
+              {userName ? userName.charAt(0).toUpperCase() : "U"}
+            </div>
             <div>
-              <h1>{user.userName}</h1>
-              <p>{user.email}</p>
+              <h1>{userName}</h1>
             </div>
           </div>
-
-          <button className="btn outline">Edit Profile</button>
         </div>
 
-        {/* ===== MAIN STACK (ONE CARD PER ROW) ===== */}
         <div className="profile-stack">
 
-          {/* ===== RESUME CARD ===== */}
-          <div className="panel-card wide horizontal-card">
+          {/* ===== RESUME SECTION ===== */}
+          <div className="panel-card horizontal-card">
 
-            <div className="card-left resume-left">
+            <div className="card-left">
               <input
                 type="file"
                 accept=".pdf,.doc,.docx"
                 ref={fileInputRef}
                 onChange={handleFileChange}
-                style={{ display: "none" }}
+                hidden
               />
 
-              {resumeId && (
+              {resume ? (
                 <div className="resume-display">
-                  <span className="resume-icon">📄</span>
-                  <span className="resume-text">{resumeName}</span>
+                  <span>📄</span>
+                  <span>{resume.fileName}</span>
                 </div>
+              ) : (
+                <p className="empty-text">
+                  You haven't uploaded a resume yet.
+                </p>
               )}
-              </div>
-
+            </div>
 
             <div className="card-right">
-              <button className="btn primary" onClick={handleResumeUpload}>
-                {resumeId ? "Upload New Version" : "Upload"}
+              <button className="btn primary" onClick={handleUploadClick}>
+                {resume ? "Upload New Version" : "Upload Resume"}
               </button>
-              {resumeId && (
-                 <>
-              <button className="btn secondary" onClick={() => handleViewResume(resumeId)} disabled={!resumeId}>View</button>
-               {isResumeOpen &&
-                  createPortal(
-                    <div className="resume-modal">
-                      <button className="close-btn" onClick={handleCloseResume}>
-                        ×
+
+              {resume && (
+                <>
+                  <button className="btn secondary" onClick={handleViewResume}>
+                    View
+                  </button>
+                  <button className="btn danger" onClick={handleDeleteResume}>
+                    Delete
+                  </button>
+                </>
+              )}
+            </div>
+          </div>
+
+          {/* ===== USER JOBS ===== */}
+          <div className="panel-card jobs-card">
+
+            <h2 className="section-title">Your Uploaded Jobs</h2>
+
+            {userJobs.length === 0 ? (
+              <p className="empty-text">
+                You haven't uploaded any jobs yet.
+              </p>
+            ) : (
+              <div className="jobs-list">
+                {userJobs.map((job) => (
+                  <div key={job.id} className="job-item">
+                    <div>
+                      <h3>{job.title}</h3>
+                      <p className="job-meta">
+                        {job.companyName} • {job.location}
+                      </p>
+                    </div>
+
+                    <div style={{ display: "flex", gap: "10px" }}>
+                      <button
+                        className="btn secondary"
+                        onClick={() => handleEditJob(job.id)}
+                      >
+                        Edit
                       </button>
 
-                      <iframe
-                        src={resumeUrl}
-                        title="Resume"
-                        className="resume-frame"
-                      />
-                    </div>,
-                    document.body
-                  )
-                }
-              <button className="btn danger" onClick={handleDelete} disabled={!resumeId} >Delete</button>
-              </>
-                 )}
-            </div>
-          </div>
-         
+                      <button
+                        className="btn danger"
+                        onClick={() => handleDeleteJob(job.id)}
+                      >
+                        Delete
+                      </button>
+                    </div>
 
-          {/* ===== SELECTED COMPANIES ===== */}
-          <div className="panel-card wide horizontal-card">
-
-            <div className="card-left">
-              <h3>Selected Companies</h3>
-              <div className="chip-container">
-                <span className="chip">Google</span>
-                <span className="chip">Microsoft</span>
-                <span className="chip">Amazon</span>
-                <span className="chip">Infosys</span>
-                <span className="chip">TCS</span>
+                  </div>
+                ))}
               </div>
-            </div>
-
-            <div className="card-right">
-              <button className="btn secondary">Manage</button>
-            </div>
+            )}
           </div>
-
-          {/* ===== ATS PREFERENCE ===== */}
-          <div className="panel-card wide horizontal-card">
-
-            <div className="card-left">
-              <h3>ATS Preference</h3>
-              <p className="small-text">Minimum ATS Score</p>
-              <span className="status highlight">70%</span>
-            </div>
-
-            <div className="card-right">
-              <button className="btn primary">Change Threshold</button>
-            </div>
-          </div>
-
-          {/* ===== EMAIL NOTIFICATIONS ===== */}
-          <div className="panel-card wide horizontal-card">
-
-            <div className="card-left">
-              <h3>Email Notifications</h3>
-              <span className="status on">Job Match Alerts: ON</span>
-            </div>
-
-            <div className="card-right">
-              <button className="btn secondary">Toggle</button>
-            </div>
-          </div>
-
-          {/* ===== LOGOUT ===== */}
-          <button className="btn danger full logout-btn">Logout</button>
 
         </div>
       </div>
+
+      {/* ===== RESUME MODAL ===== */}
+      {isResumeOpen &&
+        createPortal(
+          <div className="resume-modal">
+            <button
+              className="close-btn"
+              onClick={() => setIsResumeOpen(false)}
+            >
+              ×
+            </button>
+            <iframe
+              src={resumeUrl}
+              title="Resume"
+              className="resume-frame"
+            />
+          </div>,
+          document.body
+        )}
     </>
   );
 };

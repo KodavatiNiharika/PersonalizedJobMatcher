@@ -13,6 +13,8 @@ public class Job {
 
     private String title;
 
+    private String userName;
+
     @Column(length = 2000)
     private String description;
 
@@ -87,6 +89,19 @@ public class Job {
     public void setExpiredAt(LocalDateTime expiredAt) {
         this.expiredAt = expiredAt;
     }
+
+    public void setUserName(String userName) {
+        this.userName = userName;
+    }
+
+    public String getUserName() {
+        return userName;
+    }
+
+    public String getCompanyName() {
+        return company;
+    }
+
 
     @PrePersist
     public void onCreate() {

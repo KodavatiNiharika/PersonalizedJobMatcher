@@ -1,9 +1,19 @@
-import React, { useState } from "react";
+import React, { useState , useEffect} from "react";
 import axios from "axios";
 import "./UploadJob.css";
 import Navbar from "../../components/Navbar/Navbar";
+import { useLocation, useNavigate } from "react-router-dom";
+
+
+const token = localStorage.getItem("token");
+
 
 const UploadJob = () => {
+  const location = useLocation();
+const navigate = useNavigate();
+
+const jobId = location.state?.jobId;
+const isEditMode = !!jobId;
   const [job, setJob] = useState({
     title: "",
     description: "",
@@ -15,7 +25,25 @@ const UploadJob = () => {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
   const userId = localStorage.getItem("userId");
-  console.log(userId);
+  const userName = localStorage.getItem("username");
+useEffect(() => {
+  if (isEditMode) {
+    fetchJobDetails();
+  }
+}, [jobId]);
+
+const fetchJobDetails = async () => {
+  try {
+    const response = await axios.get(
+      `http://localhost:8080/api/jobs/${jobId}`,
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+
+    setJob(response.data); // assumes you already have job state
+  } catch (error) {
+    alert("Failed to load job details");
+  }
+};
 
   const handleChange = (e) => {
     setJob({
@@ -25,49 +53,74 @@ const UploadJob = () => {
   };
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    setMessage("");
+  e.preventDefault();
 
-    try {
-      const token = localStorage.getItem("token");
+  const token = localStorage.getItem("token");
 
-      await axios.post(
-        "http://localhost:8080/jobs/create",
+  if (!token) {
+    alert("Session expired. Please login again.");
+    navigate("/login");
+    return;
+  }
+
+  setLoading(true);
+
+  const config = {
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    },
+  };
+
+  try {
+    let response;
+
+    if (isEditMode) {
+      response = await axios.put(
+        `http://localhost:8080/api/jobs/${jobId}`,
         job,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        }
+        config
       );
 
+      alert("Job updated successfully!");
+    } else {
+      response = await axios.post(
+        "http://localhost:8080/api/jobs/create",
+        job,
+        config
+      );
 
-      setMessage("Job uploaded successfully!");
-      setJob({
-        title: "",
-        description: "",
-        company: "",
-        location: "",
-        applyLink: ""
-      });
-
-    } catch (error) {
-      console.error(error);
-      setMessage("Failed to upload job.");
+      alert("Job created successfully!");
     }
 
+    navigate("/profile");
+
+  } catch (error) {
+    console.error("Job operation error:", error.response || error);
+
+    if (error.response?.status === 401) {
+      alert("Unauthorized. Please login again.");
+      navigate("/login");
+    } else if (error.response?.status === 403) {
+      alert("You are not allowed to perform this action.");
+    } else {
+      alert("Operation failed. Please try again.");
+    }
+
+  } finally {
     setLoading(false);
-  };
+  }
+};
+
+
 return (
     <>
     <Navbar/>
   <div className="uploadContainer">
     <div className="uploadCard">
-      <h2 className="uploadTitle">Upload Job</h2>
+      <h2 className="uploadTitle">{isEditMode ? "Edit Job" : "Upload Job"}</h2>
 
       <form onSubmit={handleSubmit} className="uploadForm">
-
 
         <input
           type="text"
@@ -119,8 +172,15 @@ return (
         />
 
         <button type="submit" disabled={loading} className="uploadButton">
-          {loading ? "Uploading..." : "Upload Job"}
-        </button>
+        {loading
+          ? isEditMode
+            ? "Updating..."
+            : "Uploading..."
+          : isEditMode
+            ? "Update Job"
+            : "Upload Job"}
+      </button>
+
       </form>
 
       {message && <p className="uploadMessage">{message}</p>}

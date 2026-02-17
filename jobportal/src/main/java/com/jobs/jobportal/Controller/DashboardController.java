@@ -31,14 +31,14 @@ public class DashboardController {
     @GetMapping
     public List<Job> getJobs(org.springframework.security.core.Authentication authentication) {
 
-        String username = authentication.getName();
+        String userName = authentication.getName();
 
-        Long userId = userRepo.findByUserName(username)
+        Long userId = userRepo.findByUserName(userName)
                 .orElseThrow()
                 .getId();
 
         // Step 1: Get jobIds with ATS > 40
-        List<Long> jobIds = atsRepo.findJobIdsWithHighAts(userId);
+        List<Long> jobIds = atsRepo.findJobIdsWithHighAts(userName);
 
         // Step 2: Fetch full Job objects
         return jobRepo.findAllById(jobIds);
