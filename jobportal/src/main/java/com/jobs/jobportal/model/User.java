@@ -17,7 +17,14 @@ public class User {
     @Column(unique = true, nullable = false)
     private String email;
     private String password;
+    private int atsThreshold;
 
+    public int getatsThreshold() {
+        return atsThreshold;
+    }
+    public void setAtsThreshold(int atsThreshold) {
+        this.atsThreshold = atsThreshold;
+    }
     public Long getId() {
         return id;
     }

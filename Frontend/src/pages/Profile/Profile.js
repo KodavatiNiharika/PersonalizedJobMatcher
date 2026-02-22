@@ -13,6 +13,7 @@ const Profile = () => {
   const [resumeUrl, setResumeUrl] = useState("");
   const [isResumeOpen, setIsResumeOpen] = useState(false);
   const [userJobs, setUserJobs] = useState([]);
+  const [atsThreshold, setAtsThreshold] = useState(0);
 
   const userId = localStorage.getItem("userId");
   const token = localStorage.getItem("token");
@@ -23,7 +24,38 @@ const Profile = () => {
   useEffect(() => {
     fetchResume();
     fetchUserJobs();
+    fetchUserThreshold();
   }, []);
+
+  const fetchUserThreshold = async () => {
+  try {
+    const response = await axios.get(
+      `http://localhost:8080/api/users/${userId}/threshold`,
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+      setAtsThreshold(response.data.threshold || 0);
+    } catch (error) {
+      console.error("Failed to fetch ATS threshold", error);
+    }
+  };
+
+  const handleAtsThreshold = (e) => {
+    setAtsThreshold(e.target.value);
+  };
+
+  const saveAtsThreshold = async () => {
+  try {
+    await axios.put(
+      `http://localhost:8080/api/users/${userId}/threshold`,
+      { threshold: atsThreshold },
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+    alert("ATS Threshold updated successfully!");
+  } catch (error) {
+    console.error("Failed to save threshold", error);
+    alert("Failed to save ATS threshold!");
+  }
+};
 
   const handleDeleteJob = async (jobId) => {
   const confirmDelete = window.confirm(
@@ -176,8 +208,22 @@ const Profile = () => {
               <h1>{userName}</h1>
             </div>
           </div>
+          <div className="atsThreshold">
+            <label htmlFor="atsThresholdInput">ATS Threshold:</label>
+            <input
+              type="number"
+              id="atsThresholdInput"
+              value={atsThreshold}
+              onChange={handleAtsThreshold}
+              min={0}
+              max={100}
+            />
+            <button className="btn primary" onClick={saveAtsThreshold}>
+              Save
+            </button>
         </div>
-
+        </div>
+        
         <div className="profile-stack">
 
           {/* ===== RESUME SECTION ===== */}

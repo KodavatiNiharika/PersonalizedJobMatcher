@@ -12,7 +12,7 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: create #if we keep create here, on every restart of server the old data in tables will be removed, so just use update as the ddl command functionality
+      ddl-auto: update #if we keep create here, on every restart of server the old data in tables will be removed, so just use update as the ddl command functionality
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect

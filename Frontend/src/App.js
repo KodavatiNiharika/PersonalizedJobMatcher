@@ -1,7 +1,7 @@
 import logo from './logo.svg';
 import { BrowserRouter } from 'react-router-dom';
 import './App.css';
-import Dashboard from './pages/Dashboard';
+import Dashboard from './pages/Dashboard/Dashboard';
 import Login from './pages/Login/Login';
 import Navbar from './components/Navbar/Navbar';
 import Signup from './pages/Signup/Signup';
@@ -13,7 +13,7 @@ function App() {
   return (
     <div className="App"> 
         <Routes>
-          <Route path='/dashboard' element={<Dashboard userId={1} />
+          <Route path='/dashboard' element={<Dashboard />
 }/>
           <Route path='/login' element={<Login/>}/>
           <Route path='/' element={<Signup/>}/>

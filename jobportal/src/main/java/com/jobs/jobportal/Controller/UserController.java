@@ -1,9 +1,11 @@
 package com.jobs.jobportal.controller;
 
+import com.jobs.jobportal.DTO.ThresholdDTO;
 import com.jobs.jobportal.model.User;
 import com.jobs.jobportal.service.UserService;
 import org.springframework.web.bind.annotation.*;
 import java.util.Map;
+
 
 @RestController
 @RequestMapping("/api/users")
@@ -38,5 +40,17 @@ public class UserController {
             "userId", found.getId(),
             "username", found.getUserName()
         );
+    }
+
+    @GetMapping("/{userId}/threshold")
+    public Map<String, Integer> fetchThreshold(@PathVariable Long userId) {
+        Integer threshold = userService.getatsThreshold(userId);
+        return Map.of("threshold", threshold);
+    }
+    
+
+    @PutMapping("/{userId}/threshold")
+    public Integer putThreshold(@PathVariable Long userId, @RequestBody ThresholdDTO dto) {
+        return userService.putThreshold(userId, dto.getThreshold());
     }
 }
