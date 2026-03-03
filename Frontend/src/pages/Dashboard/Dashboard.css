@@ -1,27 +1,37 @@
 /* ===== Reset ===== */
 * {
-    margin-top: 100px;
     margin: 0;
     padding: 0;
     box-sizing: border-box;
 }
 
-/* ===== Page Background ===== */
+/* ===== Body ===== */
 body {
     min-height: 100vh;
-    background: #121212; /* dark background */
+    background: #121212;
     font-family: "Inter", "Helvetica Neue", Arial, sans-serif;
     color: #E0E0E0;
-    padding-top: 300px;
+}
+
+/* ===== Navbar Spacer ===== */
+:root {
+    --navbar-height: 60px; /* set your navbar height */
+}
+
+body::before {
+    content: "";
+    display: block;
+    height: var(--navbar-height);
 }
 
 /* ===== Container ===== */
 .dashboard-container {
     max-width: 1200px;
-    margin: 80px auto 40px auto; /* leave space for navbar */
-    padding: 0 20px;
+    margin: 0 auto;
+    padding: 20px;
 }
 
+/* ===== Headings ===== */
 h2 {
     text-align: center;
     margin-bottom: 30px;
@@ -30,6 +40,7 @@ h2 {
 
 h3 {
     text-align: center;
+    color: #F5F5F5;
 }
 
 /* ===== Job List Grid ===== */
@@ -41,10 +52,10 @@ h3 {
 
 /* ===== Job Card ===== */
 .job-card {
-    background: #1E1E1E; /* dark card */
+    background: #1E1E1E;
     border-radius: 14px;
     padding: 20px;
-    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.6);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
     display: flex;
     flex-direction: column;
     justify-content: space-between;
@@ -54,14 +65,14 @@ h3 {
 
 .job-card:hover {
     transform: translateY(-2px);
-    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7);
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.7);
 }
 
 /* ===== Job Info ===== */
 .job-info h3 {
     margin: 0 0 12px 0;
-    color: #F5F5F5;
     font-size: 1.2rem;
+    color: #F5F5F5;
 }
 
 .info-row {
@@ -81,6 +92,7 @@ h3 {
 }
 
 .description {
+    display: flex;
     flex-direction: column;
     margin-top: 8px;
 }
@@ -93,8 +105,8 @@ h3 {
 
 /* ===== Apply Button ===== */
 .job-action {
-    margin-top: 15px;
     text-align: right;
+    margin-top: 15px;
 }
 
 .apply-btn {
@@ -125,5 +137,12 @@ h3 {
 @media (max-width: 768px) {
     .jobs-list {
         grid-template-columns: 1fr;
+    }
+    .job-card {
+        padding: 15px;
+    }
+    .apply-btn {
+        width: 100%;
+        text-align: center;
     }
 }

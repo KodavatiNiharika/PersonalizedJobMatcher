@@ -2,7 +2,7 @@ from pydantic import BaseModel
 from typing import List
 
 class Resume(BaseModel):
-    userName: str
+    userEmail: str
     fullText: str
 
 class ATSRequest(BaseModel):

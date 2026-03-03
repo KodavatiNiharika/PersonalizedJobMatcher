@@ -34,7 +34,7 @@ def calculate_scores(request: ATSRequest):
         )
 
         results.append({
-            "userName": resume.userName,
+            "userEmail": resume.userEmail,
             "score": score_data["final_score"]
         })
 

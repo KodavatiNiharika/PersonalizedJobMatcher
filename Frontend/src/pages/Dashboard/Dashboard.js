@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import Navbar from "../../components/Navbar/Navbar";
-import "./Dashboard.css"; // import the CSS
+import "./Dashboard.css";
 
 function Dashboard() {
   const [jobs, setJobs] = useState([]);
@@ -22,7 +22,7 @@ function Dashboard() {
     <div>
       <Navbar />
       <div className="dashboard-container">
-        <h2>Jobs With ATS Score &gt; 40</h2>
+        <h2>Personalised jobs for you :)</h2>
         <div className="jobs-list">
           {jobs.map((job) => (
             <div className="job-card" key={job.id}>

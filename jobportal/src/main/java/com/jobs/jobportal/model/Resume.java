@@ -39,6 +39,10 @@ public class Resume {
         return fileData;
     }
 
+    public String getUserEmail() {
+        return user.getEmail();
+    }
+
     public void setFileData(byte[] fileData) {
         this.fileData = fileData;
     }

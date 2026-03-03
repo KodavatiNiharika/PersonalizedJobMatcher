@@ -19,11 +19,18 @@ public class AtsScore {
     @Column(nullable = false)
     private double atsScore;
 
+
+    @Column(nullable = false) 
+    private String email;
+
     // getters and setters
     public Long getId() { return id; }
 
     public String getUserName() { return userName; }
     public void setUserName(String userName) { this.userName = userName; }
+
+    public String getUserEmail() { return email; }
+    public void setUserEmail(String email) { this.email = email; }
 
     public Long getJobId() { return jobId; }
     public void setJobId(Long jobId) { this.jobId = jobId; }

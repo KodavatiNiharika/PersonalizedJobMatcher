@@ -12,7 +12,7 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: update #if we keep create here, on every restart of server the old data in tables will be removed, so just use update as the ddl command functionality
+      ddl-auto: create #if we keep create here, on every restart of server the old data in tables will be removed, so just use update as the ddl command functionality
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
@@ -23,6 +23,33 @@ spring:
     error:
       include-message: always
       include-binding-errors: always
+  kafka:
+    bootstrap-servers: localhost:9092
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+    consumer:
+      group-id: job-ats-group
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      auto-offset-reset: earliest
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: "YOUR EMAIL"
+    password: "Generate it from google"
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+ats:
+  topic: ats-topic
+
+mail:
+  topic: mail-topic
 jwt:
   secret: thisissecretkeybecausethisissecret
 
+  

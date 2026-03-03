@@ -1,16 +1,6 @@
 /* ===== RESET ===== */
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
-/* ===== BODY ===== */
-body {
-  background: #121212; /* pure dark base */
-  font-family: "Inter", "Helvetica Neue", Arial, sans-serif;
-  color: #E0E0E0;
-}
+ 
+ 
 
 /* ===== PAGE LAYOUT ===== */
 .profile-page {
